@@ -72,7 +72,7 @@
     
     IJKFFOptions *options = [IJKFFOptions optionsByDefault];
     
-    self.player = [[IJKFFMoviePlayerController alloc] initWithContentURL:[NSURL URLWithString:@"http://qqpull99.inke.cn/live/1504526861233928.flv?ikHost=tx&ikOp=0&codecInfo=8192"] withOptions:options];
+    self.player = [[IJKFFMoviePlayerController alloc] initWithContentURL:[NSURL URLWithString:@"http://www.inke.cn/live.html?uid=152136976&id=1504617814684218"] withOptions:options];
     self.player.view.frame = self.view.bounds;
     self.player.shouldAutoplay = YES;
     [self.view addSubview:self.player.view];

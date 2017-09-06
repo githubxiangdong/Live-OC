@@ -9,13 +9,33 @@
 #import "LFLivePreview.h"
 #import "UIControl+YYAdd.h"
 #import "UIView+YYAdd.h"
-#import "LFLiveSession.h"
+#import "LFLiveKit.h"
+
+inline static NSString *formatedSpeed(float bytes, float elapsed_milli) {
+    if (elapsed_milli <= 0) {
+        return @"N/A";
+    }
+
+    if (bytes <= 0) {
+        return @"0 KB/s";
+    }
+
+    float bytes_per_sec = ((float)bytes) * 1000.f /  elapsed_milli;
+    if (bytes_per_sec >= 1000 * 1000) {
+        return [NSString stringWithFormat:@"%.2f MB/s", ((float)bytes_per_sec) / 1000 / 1000];
+    } else if (bytes_per_sec >= 1000) {
+        return [NSString stringWithFormat:@"%.1f KB/s", ((float)bytes_per_sec) / 1000];
+    } else {
+        return [NSString stringWithFormat:@"%ld B/s", (long)bytes_per_sec];
+    }
+}
 
 @interface LFLivePreview ()<LFLiveSessionDelegate>
 
 @property (nonatomic, strong) UIButton *beautyButton;
 @property (nonatomic, strong) UIButton *cameraButton;
 @property (nonatomic, strong) UIButton *closeButton;
+@property (nonatomic, strong) UIButton *startLiveButton;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) LFLiveDebug *debugInfo;
 @property (nonatomic, strong) LFLiveSession *session;
@@ -35,6 +55,7 @@
         [self.containerView addSubview:self.closeButton];
         [self.containerView addSubview:self.cameraButton];
         [self.containerView addSubview:self.beautyButton];
+        [self.containerView addSubview:self.startLiveButton];
     }
     return self;
 }
@@ -118,6 +139,7 @@
 
 /** live debug info callback */
 - (void)liveSession:(nullable LFLiveSession *)session debugInfo:(nullable LFLiveDebug *)debugInfo {
+    NSLog(@"debugInfo uploadSpeed: %@", formatedSpeed(debugInfo.currentBandwidth, debugInfo.elapsedMilli));
 }
 
 /** callback socket errorcode */
@@ -128,19 +150,17 @@
 #pragma mark -- Getter Setter
 - (LFLiveSession *)session {
     if (!_session) {
-
+        
         /***   默认分辨率368 ＊ 640  音频：44.1 iphone6以上48  双声道  方向竖屏 ***/
         
         LFLiveAudioConfiguration * audioConfiguration =[LFLiveAudioConfiguration defaultConfiguration];
         
         LFLiveVideoConfiguration * videoConfiguration = [LFLiveVideoConfiguration defaultConfiguration];
         
-        _session = [[LFLiveSession alloc]initWithAudioConfiguration:audioConfiguration videoConfiguration:videoConfiguration];
-        
+        _session = [[LFLiveSession alloc] initWithAudioConfiguration:audioConfiguration videoConfiguration:videoConfiguration captureType:LFLiveCaptureDefaultMask];
         _session.delegate = self;
         _session.showDebugInfo = NO;
         _session.preView = self;
-        
     }
     return _session;
 }
@@ -174,11 +194,11 @@
         [_closeButton setImage:[UIImage imageNamed:@"close_preview"] forState:UIControlStateNormal];
         _closeButton.exclusiveTouch = YES;
         
-        __weak typeof(self) weakSelf = self;
+        __weak typeof(self) _self = self;
         [_closeButton addBlockForControlEvents:UIControlEventTouchUpInside block:^(id sender) {
             
-            [weakSelf stopLive];
-            [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+            [_self stopLive];
+            [_self.viewController dismissViewControllerAnimated:YES completion:nil];
         }];
     }
     return _closeButton;
@@ -220,7 +240,8 @@
 - (void)startLive {
     
     LFLiveStreamInfo *stream = [LFLiveStreamInfo new];
-    stream.url = @"rtmp://live.hkstv.hk.lxdns.com:1935/live/dahuan";
+    
+    stream.url = @"rtmp://istream.inke.cn/live/1504617814684218?ikProfile=3&ikWidth=576&ikHeight=1024&ikBr=1200&ikFps=15&ikHost=ws&ikOp=1";
     [self.session startLive:stream];
 }
 
@@ -228,8 +249,6 @@
     
     [self.session stopLive];
 }
-
-
 
 @end
 

@@ -11,7 +11,4 @@
 @interface LFLivePreview : UIView
 
 - (void)startLive;
-
-- (void)stopLive;
-
 @end
